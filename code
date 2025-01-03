@@ -1,0 +1,129 @@
+root/
+├── environments/
+│   ├── dev/
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   ├── providers.tf
+│   │   ├── variables.tf
+│   │   └── terraform.tfvars
+│   ├── prod/
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   ├── providers.tf
+│   │   ├── variables.tf
+│   │   └── terraform.tfvars
+│   └── staging/
+│       ├── main.tf
+│       ├── outputs.tf
+│       ├── providers.tf
+│       ├── variables.tf
+│       └── terraform.tfvars
+├── modules/
+│   ├── compute/
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   ├── network/
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   ├── storage/
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   └── security/
+│       ├── main.tf
+│       ├── outputs.tf
+│       └── variables.tf
+├── backend.tf
+├── global-variables.tf
+├── README.md
+└── versions.tf
+
+# Example Code for Each File
+
+## backend.tf
+terraform {
+  backend "s3" {
+    bucket         = "my-terraform-state-bucket"
+    key            = "global/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "terraform-lock"
+  }
+}
+
+## versions.tf
+terraform {
+  required_version = ">= 1.5.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+## global-variables.tf
+variable "environment" {
+  description = "Environment name (dev, staging, prod)"
+  type        = string
+}
+
+variable "region" {
+  description = "AWS region"
+  type        = string
+}
+
+defaults = {
+  region = "us-east-1"
+}
+
+## Module: network/main.tf
+resource "aws_vpc" "main" {
+  cidr_block           = var.cidr_block
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+  tags = {
+    Name = var.vpc_name
+  }
+}
+
+## Environment-Specific: dev/terraform.tfvars
+environment = "dev"
+region      = "us-east-1"
+cidr_block  = "10.0.0.0/16"
+vpc_name    = "dev-vpc"
+
+## Environment-Specific: dev/providers.tf
+provider "aws" {
+  region = var.region
+}
+
+# README.md
+# Terraform Large Application
+
+This repository contains the Terraform configuration to manage a large-scale application. It is structured to follow modular and reusable best practices.
+
+## Directory Structure
+- `environments`: Contains environment-specific configurations.
+- `modules`: Contains reusable modules for compute, network, storage, and security.
+
+## Usage
+1. Navigate to the desired environment directory (e.g., `environments/dev`).
+2. Initialize Terraform:
+   ```
+   terraform init
+   ```
+3. Plan the changes:
+   ```
+   terraform plan
+   ```
+4. Apply the changes:
+   ```
+   terraform apply
+   ```
+
+## Prerequisites
+- Terraform version >= 1.5.0
+- AWS CLI configured with necessary permissions.
